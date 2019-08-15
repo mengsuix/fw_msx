@@ -1,24 +1,57 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: msx
- * Date: 2018/12/19
- * Time: 下午8:52
- */
 namespace core;
 
 class Route
 {
-    public $resource = [];
+    private static $map;
 
     public function __construct()
     {
-        //去掉最左端'/'分隔符
-        $requestUri = trim($_SERVER['REQUEST_URI'], '/');
-        //以'/'为标志，打散uri为数组
-        $requestUri = explode('/', $requestUri);
-        $this->resource['list'] = $requestUri[0] ?: 'default';
-        $this->resource['controller'] = $requestUri[1] ?: 'default';
-        $this->resource['method'] = $requestUri[2] ?: 'main';
+        $directory = array_slice(scandir(ROUTE), 2);
+        foreach ($directory as $value) {
+            require ROUTE . '/' .$value;
+        }
+    }
+
+    public function match($routePath)
+    {
+        if (isset(self::$map[$routePath])) {
+            return self::$map[$routePath];
+        } else {
+            return [];
+        }
+    }
+
+    public static function get($path, $handle)
+    {
+        if ('get') {
+            self::saveInMap($path, $handle);
+        }
+    }
+
+    public static function post($path, $handle)
+    {
+
+    }
+
+    public static function any($path, $handle)
+    {
+
+    }
+
+    private static function saveInMap($path, $handle)
+    {
+        if (is_callable($handle)) {
+            call_user_func($handle);
+        } else {
+            $tmp = explode('@', $handle);
+            $class = $tmp[0];
+            $method = $tmp[1];
+            self::$map[$path] = [
+                'request_method' => 'GET',
+                'class' => $class,
+                'method' => $method
+            ];
+        }
     }
 }

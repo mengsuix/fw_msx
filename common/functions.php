@@ -1,15 +1,12 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: msx
- * Date: 2018/12/19
- * Time: 下午6:17
+ * 从容器解析
+ * @param $class
+ * @return mixed
  */
-/**
- * 调试变量
- * @param $var
- */
-function varDebug($var) {
-    var_dump($var);
-    exit;
+function app($class)
+{
+    $container = \core\Container::getContainer();
+    return $container->get($class);
 }

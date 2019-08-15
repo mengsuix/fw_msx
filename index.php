@@ -1,19 +1,17 @@
 <?php
-/**
- * 入口文件
- */
+//定义常量
 define('ROOT', dirname(__FILE__));
 define('CORE', ROOT . '/core');
 define('APP', ROOT . '/app');
 define('COMMON', ROOT . '/common');
-define('DEBUG', true);
-if (DEBUG) {
-    ini_set('display_errors', 'On');
-} else {
-    ini_set('display_errors', 'Off');
-}
-include COMMON . '/functions.php';
-include APP . '/controller/Controller.php';
+define('ROUTE', ROOT . '/route');
+//加载启动代码
 include CORE . '/Init.php';
+include COMMON . '/functions.php';
 spl_autoload_register('\core\Init::load');
-\core\Init::run();
+//实例化容器
+$container = new \core\Container();
+//获取app实例
+$app = $container->get(\core\App::class);
+$response = $container->get(\core\Response::class);
+$response->rend($app->handle());
