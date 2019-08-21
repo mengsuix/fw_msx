@@ -7,24 +7,21 @@ class Mysql
     private $pdo;
     private $pdoStatement;
     private $whereSql;
-    private $whereValue;
+    private $whereValue = [];
     private $field;
     private $controllerSql;
-    private $controllerValue;
+    private $controllerValue = [];
     private $groupSql;
     private $orderSql;
     private $limitSql;
     private $table;
-    private $dataType = [
-        'integer' => \PDO::PARAM_INT,
-        'string' => \PDO::PARAM_STR
-    ];
 
     public function __construct($host, $dbName, $user, $password)
     {
         $dsn = "mysql:host=$host;dbname=$dbName";
         try {
             $this->pdo = new \PDO($dsn, $user, $password);
+            $this->pdo->query("SET NAMES UTF8");
         } catch (\PDOException $e) {
             var_dump($e->getMessage());
             throw new \Exception($e->getMessage());
@@ -49,18 +46,16 @@ class Mysql
         $sql .= ' ' . $this->limitSql;
         $this->pdoStatement = $this->pdo->prepare($sql);
         $values = array_merge($this->controllerValue, $this->whereValue);
-        foreach ($values as $key => $value) {
-            $this->pdoStatement->bindValue($key + 1, $value, $this->dataType[gettype($value)]);
-        }
+        return $values;
     }
 
     public function select()
     {
         $this->controllerSql = "SELECT " . $this->field . " FROM " . $this->table;
         try {
-            $this->buildQuery();
-            $this->pdoStatement->execute();
-            $data = $this->pdoStatement->fetchAll();
+            $values = $this->buildQuery();
+            $this->pdoStatement->execute($values);
+            $data = $this->pdoStatement->fetchAll(\PDO::FETCH_NAMED);
             return $data;
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
@@ -157,7 +152,7 @@ class Mysql
         }
         $this->whereValue[] = $value;
         if (empty($this->whereSql)) {
-            $this->whereSql = $whereStr;
+            $this->whereSql = "WHERE " . $whereStr;
         } else {
             $this->whereSql = $connCondition . $whereStr;
         }
@@ -167,6 +162,7 @@ class Mysql
     public function field($field = '*')
     {
         $this->field = $field;
+        return $this;
     }
 
     public function groupBy($groupBy)

@@ -14,10 +14,8 @@ class Index extends Controller
 {
     public function main()
     {
-        var_dump('cdc');
         $mysql = new Mysql('127.0.0.1', 'user', 'root', '4305819');
-
-//        $this->assign('data', 'mengsuixing');
-//        $this->display('index/index.html');
+        $data = $mysql->table('student')->field('id,name,birth')->where('sex', '=', '1')->select();
+        var_dump($data);
     }
 }
